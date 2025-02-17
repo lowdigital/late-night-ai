@@ -73,7 +73,7 @@ python3 comments.py &
 
 ## Usage
 1. Start the livestream.
-2. Users submit topics in YouTube chat using `/тема <text>`.
+2. Users submit topics in YouTube chat using `/topic <text>`.
 3. AI generates a conversation based on the topic.
 4. The system synthesizes voices and plays synchronized video.
 5. The cycle repeats endlessly.
