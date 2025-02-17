@@ -54,8 +54,8 @@ def main():
                     for c in chat.get().sync_items():
                         console_msg(f"[{c.author.name}]: {c.message}")
 
-                        if c.message.startswith("/тема"):
-                            topic_text = c.message[len("/тема"):].strip()
+                        if c.message.startswith("/topic"):
+                            topic_text = c.message[len("/topic"):].strip()
                             if topic_text:
                                 send_scenario(c.author.name, topic_text)
 
