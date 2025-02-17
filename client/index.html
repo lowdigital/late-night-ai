@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Scenario Fullscreen with Start</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      overflow: hidden;
+      font-family: sans-serif;
+      height: 100%;
+      width: 100%;
+    }
+
+    #startScreen {
+      position: absolute;
+      top: 0; 
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+      z-index: 999;
+    }
+    #startBtn {
+      padding: 20px 40px;
+      font-size: 24px;
+      cursor: pointer;
+      background: #444;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+    #startBtn:hover {
+      background: #666;
+    }
+
+    #videoPlayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      background: #000;
+    }
+
+    #audioPlayer {
+      display: none;
+    }
+
+    #author {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 18px;
+      line-height: 1.2;
+      text-shadow: 0 0 5px #05f, 0 0 10px #05f;
+      z-index: 2;
+      font-weight: normal;
+      max-width: 60%;
+    }
+
+    #topic {
+      position: absolute;
+      top: 40px;
+      left: 10px;
+      color: #fff;
+      font-size: 18px;
+      line-height: 1.2;
+      text-shadow: 0 0 5px #05f, 0 0 10px #05f;
+      z-index: 2;
+      font-weight: normal;
+      max-width: 60%;
+    }
+
+    #subtitles {
+      position: absolute;
+      bottom: 10%;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 36px;
+      text-shadow: 0 0 5px #000, 0 0 10px #000;
+      z-index: 2;
+      padding: 0 20px;
+      box-sizing: border-box;
+      font-weight: bold;
+    }
+
+    video::-webkit-media-controls {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="startScreen">
+    <button id="startBtn">СТАРТ</button>
+  </div>
+
+  <video id="videoPlayer"></video>
+  <audio id="audioPlayer"></audio>
+
+  <div id="author"></div>
+  <div id="topic"></div>
+  <div id="subtitles"></div>
+
+  <script>
+    const videoMap = {
+      "Владимир Жириновский": "zhirinovskiy_01.mp4",
+      "Дмитрий Гордон": "gordon_01.mp4"
+    };
+
+    const INTRO_VIDEO = "intro.mp4";
+
+
+    const startScreen  = document.getElementById('startScreen');
+    const startBtn     = document.getElementById('startBtn');
+    const videoPlayer  = document.getElementById('videoPlayer');
+    const audioPlayer  = document.getElementById('audioPlayer');
+    const topicDiv     = document.getElementById('topic');
+    const authorDiv    = document.getElementById('author');
+    const subtitles    = document.getElementById('subtitles');
+
+    let scenarioInProgress = false;
+    let intervalId = null;
+
+    startBtn.addEventListener('click', () => {
+      startScreen.style.display = 'none';
+      playIntro();
+      intervalId = setInterval(checkAndPlayScenario, 1000);
+    });
+
+    function playIntro() {
+      videoPlayer.src = INTRO_VIDEO;
+      videoPlayer.loop = true;
+      videoPlayer.muted = false;
+
+      videoPlayer.currentTime = 0;
+      videoPlayer.play().catch(err => {
+        console.warn("Не удалось авто-проиграть intro.mp4:", err);
+      });
+      topicDiv.textContent = "";
+      subtitles.textContent = "";
+      authorDiv.textContent = "";
+    }
+
+    function stopIntroLoop() {
+      videoPlayer.pause();
+      videoPlayer.currentTime = 0;
+      videoPlayer.loop = false;
+      videoPlayer.muted = false;
+    }
+
+    async function checkAndPlayScenario() {
+      if (scenarioInProgress) return;
+
+      try {
+        const response = await fetch('http://localhost:3001/story/getScenario');
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
+        if (!data.status) {
+          return;
+        }
+
+        scenarioInProgress = true;
+        stopIntroLoop();
+
+        const scenarioTopic  = data.topic || "";
+        const scenarioAuthor = data.requestor_id || "";
+
+        authorDiv.innerHTML = scenarioAuthor
+          ? `<strong>Автор:</strong> ${scenarioAuthor}`
+          : "";
+        topicDiv.innerHTML = scenarioTopic
+          ? `<strong>Тема:</strong> ${scenarioTopic}`
+          : "";
+
+        const scenarioArray = data.scenario || [];
+        await playScenario(scenarioArray);
+        scenarioInProgress = false;
+        playIntro();
+      } catch (err) {
+        console.error("Ошибка при запросе сценария:", err);
+      }
+    }
+
+    async function playScenario(scenarioLines) {
+      for (let i = 0; i < scenarioLines.length; i++) {
+        const line = scenarioLines[i];
+        await playDialogueLine(line);
+      }
+    }
+
+    function playDialogueLine(line) {
+      return new Promise(resolve => {
+        const { character, text, sound } = line;
+
+        let videoSrc = videoMap[character];
+        if (!videoSrc) {
+          videoSrc = INTRO_VIDEO;
+        }
+
+        videoPlayer.src = videoSrc;
+        videoPlayer.loop = false;
+        videoPlayer.currentTime = 0;
+        videoPlayer.muted = false;
+        subtitles.textContent = text || "";
+        audioPlayer.src = sound;
+        audioPlayer.currentTime = 0;
+        audioPlayer.onended = () => {
+          subtitles.textContent = "";
+          resolve();
+        };
+
+        videoPlayer.play().catch(err => {
+          console.warn("Не удалось проиграть видео:", err);
+        });
+        audioPlayer.play().catch(err => {
+          console.warn("Не удалось проиграть аудио:", err);
+          resolve();
+        });
+      });
+    }
+  </script>
+</body>
+</html>
