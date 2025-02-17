@@ -78,8 +78,10 @@ python3 comments.py &
 4. The system synthesizes voices and plays synchronized video.
 5. The cycle repeats endlessly.
 
-## Developer
-Developed by [low_digital](https://t.me/low_digital).
-
 ## License
+
 This project is licensed under the MIT License.
+
+## Contacts
+
+Follow updates on the Telegram channel: [low digital](https://t.me/low_digital).
