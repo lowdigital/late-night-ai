@@ -1,0 +1,5 @@
+aiohttp
+aiohttp-cors
+Flask
+pytchat
+requests
