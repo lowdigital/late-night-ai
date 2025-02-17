@@ -1,3 +1,5 @@
+![DEMO](demo.jpg)
+
 # LATE NIGHT AI
 
 LATE NIGHT AI is a software suite for running endless AI-powered livestreams. The system listens to YouTube chat for topics, generates dialogues between famous personalities using OpenAI, synthesizes voices, and displays synchronized video and subtitles.
