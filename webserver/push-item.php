@@ -1,7 +1,7 @@
 <?php
     header('Content-Type: application/json; charset=utf-8');
-	include ('options.php');
-	include ('dbconnect.php');
+    include ('options.php');
+    include ('dbconnect.php');
     
     $postData = file_get_contents('php://input');
     $data = json_decode($postData, true);
@@ -22,4 +22,4 @@
     
     $output['success'] = true;
     echo json_encode($output);
-	$link->close();
+    $link->close();

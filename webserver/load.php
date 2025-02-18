@@ -14,10 +14,7 @@
         }
     }
     
-    if ($counter == 1){
-        $query = "TRUNCATE TABLE `skip`";
-        $link->query($query);
-        
+    if ($counter == 1){       
         $query = "TRUNCATE TABLE `topics_current`";
         $link->query($query);
         

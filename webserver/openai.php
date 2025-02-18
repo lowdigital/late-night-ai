@@ -21,11 +21,9 @@
 			'method' => 'POST',
 			'header' => [
 				"Content-Type: application/json",
-				"Proxy-Authorization: Basic $proxy_auth",
 				"Authorization: Bearer $open_ai_key"
 			],
 			'content' => $jsonData,
-			'proxy' => "tcp://$proxy",
 			'request_fulluri' => true,
 		],
 		'ssl' => [
